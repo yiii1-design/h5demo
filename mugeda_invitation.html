@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>互联网人才会议邀请函</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+html,body { width:100%; height:100%; overflow:hidden; font-family:'STSong','SimSun',serif; background:#e8dcc4; }
+
+/* 页面容器 */
+.pages { position:relative; width:100%; height:100%; }
+.page { position:absolute; inset:0; opacity:0; transform:translateX(100%); transition:all 0.6s ease; pointer-events:none; }
+.page.active { opacity:1; transform:translateX(0); pointer-events:auto; }
+
+/* 纸张效果 */
+.paper-bg { position:absolute; inset:0; background:linear-gradient(135deg, #f5ecd7, #e8dcc4); }
+.paper-border { position:absolute; inset:8px; border:3px solid #2d5016; }
+.paper-border::before { content:''; position:absolute; inset:4px; border:1px solid #2d5016; }
+
+/* 顶部栏 */
+.top-bar { display:flex; justify-content:space-between; align-items:center; padding:8px 15px; background:#2d5016; color:#f5ecd7; font-size:12px; margin-bottom:15px; }
+.top-bar .url { font-family:monospace; font-size:11px; }
+
+/* 标题样式 */
+.title { font-size:56px; font-weight:bold; color:#1a3009; text-align:center; letter-spacing:8px; margin:20px 0 10px; }
+.title-en { font-family:Georgia,serif; font-size:18px; color:#6b4423; text-align:center; font-style:italic; letter-spacing:4px; }
+
+/* 标签 */
+.tag { display:inline-block; background:#2d5016; color:#f5ecd7; padding:5px 15px; font-size:14px; letter-spacing:3px; transform:rotate(-2deg); }
+.section-title { font-size:22px; font-weight:bold; color:#1a3009; text-align:center; margin:15px 0; padding-bottom:10px; border-bottom:2px solid #2d5016; }
+
+/* 内容区域 */
+.content { padding:0 20px; flex:1; overflow-y:auto; }
+.content p { font-size:14px; color:#2d2d2d; line-height:2; text-align:justify; margin-bottom:15px; }
+
+/* 卡片样式 */
+.card { background:rgba(45,80,22,0.06); border:2px solid #2d5016; padding:15px; margin-bottom:15px; display:flex; gap:15px; }
+.card-icon { width:70px; height:70px; background:linear-gradient(135deg, #d4c5a0, #c9b88a); border:2px solid #2d5016; display:flex; align-items:center; justify-content:center; font-size:28px; }
+.card-text { flex:1; }
+.card-name { font-size:16px; font-weight:bold; color:#1a3009; margin-bottom:3px; }
+.card-role { display:inline-block; background:#2d5016; color:#f5ecd7; padding:3px 10px; font-size:11px; margin-bottom:5px; }
+.card-desc { font-size:12px; color:#2d2d2d; line-height:1.6; }
+
+/* 日程项 */
+.schedule { display:flex; gap:15px; padding:12px; background:rgba(45,80,22,0.05); border:1.5px dashed #2d5016; margin-bottom:10px; }
+.schedule-time { width:80px; text-align:center; border-right:2px solid #2d5016; padding-right:10px; }
+.schedule-time .date { font-size:13px; font-weight:bold; color:#2d5016; }
+.schedule-time .time { font-size:14px; font-weight:bold; color:#6b4423; }
+.schedule-content { flex:1; font-size:13px; color:#2d2d2d; line-height:1.6; padding-top:3px; }
+
+/* 插图容器 */
+.illustration { background:linear-gradient(135deg, #d4c5a0, #c9b88a); border:2px solid #2d5016; padding:15px; margin:15px 0; }
+
+/* 页面指示器 */
+.dots { position:fixed; right:15px; top:50%; transform:translateY(-50%); display:flex; flex-direction:column; gap:10px; z-index:100; }
+.dot { width:10px; height:10px; border-radius:50%; background:rgba(45,80,22,0.4); border:2px solid #2d5016; cursor:pointer; transition:all 0.3s; }
+.dot.active { background:#2d5016; transform:scale(1.4); }
+
+/* 画中画缩略按钮 */
+.pip-trigger { position:fixed; top:70px; right:15px; width:50px; height:50px; background:#2d5016; color:#f5ecd7; border:2px solid #1a3009; border-radius:50%; display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:400; cursor:pointer; box-shadow:0 4px 12px rgba(45,80,22,0.4); transition:all 0.3s; }
+.pip-trigger:hover { transform:scale(1.1); box-shadow:0 6px 16px rgba(45,80,22,0.5); }
+.pip-trigger-icon { font-size:18px; }
+.pip-trigger-text { font-size:8px; margin-top:1px; }
+
+/* 画中画小窗 */
+.pip { position:fixed; top:70px; right:70px; width:250px; background:#f5ecd7; border:2px solid #2d5016; border-radius:10px; z-index:500; box-shadow:0 10px 30px rgba(45,80,22,0.4); opacity:0; transform:scale(0.8) translateX(20px); pointer-events:none; transition:all 0.3s ease; }
+.pip.show { opacity:1; transform:scale(1) translateX(0); pointer-events:auto; }
+.pip-header { background:#2d5016; color:#f5ecd7; padding:10px 15px; display:flex; justify-content:space-between; align-items:center; font-size:12px; border-radius:8px 8px 0 0; }
+.pip-close { width:22px; height:22px; background:#c0392b; color:#f5ecd7; border:none; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:bold; cursor:pointer; font-size:14px; }
+.pip-content { padding:15px; }
+.pip-title { font-size:16px; font-weight:bold; color:#1a3009; text-align:center; margin-bottom:8px; }
+.pip-info { font-size:11px; color:#6b4423; text-align:center; line-height:1.6; margin-bottom:12px; }
+.pip-nav { display:grid; grid-template-columns:repeat(2,1fr); gap:8px; }
+.pip-btn { padding:8px; background:#2d5016; color:#f5ecd7; border:none; font-size:11px; font-weight:bold; letter-spacing:1px; border-radius:4px; cursor:pointer; transition:all 0.2s; }
+.pip-btn:hover { background:#1a3009; }
+.pip-contact { margin-top:15px; padding-top:15px; border-top:1px dashed #2d5016; }
+
+/* 动画 */
+@keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+.animate { animation:fadeUp 0.5s ease forwards; }
+.delay1 { animation-delay:0.1s; }
+.delay2 { animation-delay:0.2s; }
+.delay3 { animation-delay:0.3s; }
+</style>
+</head>
+<body>
+
+<div class="pages">
+
+  <!-- 第1页：封面 -->
+  <div class="page active" id="page0">
+    <div class="paper-bg"></div>
+    <div class="paper-border"></div>
+    <div style="position:relative; z-index:10; height:100%; display:flex; flex-direction:column;">
+      <div class="top-bar">
+        <span class="url">www.tencent-hr.com</span>
+        <div style="text-align:right;"><div style="font-size:14px; font-weight:bold;">7月22日</div><div style="font-size:11px;">星期六</div></div>
+      </div>
+      <div class="animate">
+        <div class="title">邀请函</div>
+        <div class="title-en">INVITATION</div>
+      </div>
+      <div class="illustration animate delay1">
+        <div style="text-align:center;">
+          <div style="font-size:40px; margin-bottom:10px;">🎤</div>
+          <div style="font-size:24px; font-weight:bold; color:#1a3009;">互联网人才会议</div>
+          <div style="font-size:14px; color:#6b4423; margin-top:5px;">INTERNET TALENT CONFERENCE</div>
+        </div>
+      </div>
+      <div class="animate delay2" style="text-align:center; margin-top:auto; padding-bottom:30px;">
+        <span class="tag">要闻</span>
+        <div style="font-size:20px; font-weight:bold; color:#1a3009; margin-top:15px;">互联网人才会议邀请您参加！</div>
+        <div style="font-size:14px; color:#6b4423; margin-top:10px;">深圳市腾讯计算机系统有限公司</div>
+      </div>
+      <div style="text-align:center; padding-bottom:20px; font-size:12px; color:#6b4423;" class="animate delay3">点击或滑动查看详情 ▼</div>
+    </div>
+  </div>
+
+  <!-- 第2页：会议简介 -->
+  <div class="page" id="page1">
+    <div class="paper-bg"></div>
+    <div class="paper-border"></div>
+    <div style="position:relative; z-index:10; height:100%; display:flex; flex-direction:column;">
+      <div class="top-bar">
+        <span class="url">www.tencent-hr.com</span>
+        <div style="text-align:right;"><div style="font-size:14px; font-weight:bold;">第 02 版</div></div>
+      </div>
+      <div class="animate" style="display:flex; align-items:center; gap:10px; padding:0 20px;">
+        <span class="tag">热点</span>
+        <div class="section-title">互联网人才会议简介</div>
+      </div>
+      <div class="content animate delay1">
+        <div style="font-size:12px; color:#6b4423; text-align:center; font-style:italic; margin-bottom:15px;">MEETING BACKGROUND</div>
+        <p>互联网人才会议今年是第一届，此次大会将在深圳举办，本次会议汇聚了行业优质资源，现诚邀请业内知名互联网专家共赴此次行业盛会。</p>
+        <div class="illustration">
+          <div style="display:flex; justify-content:space-around; align-items:center; height:100px;">
+            <div style="text-align:center;"><div style="font-size:32px;">👥</div><div style="font-size:11px; color:#6b4423;">参会嘉宾</div></div>
+            <div style="text-align:center;"><div style="font-size:32px;">💼</div><div style="font-size:11px; color:#6b4423;">企业代表</div></div>
+            <div style="text-align:center;"><div style="font-size:32px;">💡</div><div style="font-size:11px; color:#6b4423;">行业专家</div></div>
+            <div style="text-align:center;"><div style="font-size:32px;">📊</div><div style="font-size:11px; color:#6b4423;">数据分析</div></div>
+          </div>
+        </div>
+        <div style="font-size:12px; color:#6b4423; text-align:center; font-style:italic; margin:15px 0;">MEETING THEME</div>
+        <p>本届大会以"数字化·智能化·协同化"为主题，进行互联网行业人才会议交流，汇聚行业精英，共同探讨未来发展之路。</p>
+        <div style="background:#2d5016; color:#f5ecd7; padding:12px; text-align:center; margin-top:20px;">
+          <div style="font-size:14px; font-weight:bold; letter-spacing:2px;">◆ 会场注意事项 ◆</div>
+          <div style="font-size:12px; margin-top:8px; display:flex; justify-content:space-around;">
+            <span>📵 手机静音</span>
+            <span>🚭 保持无烟</span>
+            <span>📖 请勿阅读</span>
+          </div>
+        </div>
+      </div>
+      <div style="text-align:center; padding:15px; font-size:12px; color:#6b4423;">— 02 / 04 —</div>
+    </div>
+  </div>
+
+  <!-- 第3页：嘉宾介绍 -->
+  <div class="page" id="page2">
+    <div class="paper-bg"></div>
+    <div class="paper-border"></div>
+    <div style="position:relative; z-index:10; height:100%; display:flex; flex-direction:column;">
+      <div class="top-bar">
+        <span class="url">www.tencent-hr.com</span>
+        <div style="text-align:right;"><div style="font-size:14px; font-weight:bold;">第 03 版</div></div>
+      </div>
+      <div class="animate" style="display:flex; align-items:center; gap:10px; padding:0 20px;">
+        <span class="tag">热点</span>
+        <div class="section-title">互联网人才会议嘉宾</div>
+      </div>
+      <div class="content animate delay1">
+        <div style="font-size:12px; color:#6b4423; text-align:center; font-style:italic; margin-bottom:15px;">THE GUEST OF INTERNET BIG SHOT MEETING</div>
+        <div class="card animate delay2">
+          <div class="card-icon">👤</div>
+          <div class="card-text">
+            <div class="card-name">李想</div>
+            <div class="card-role">联合创始人</div>
+            <div class="card-desc">全国大学生软件测试大赛发起人，主要从事智能软件工程研究，长期专注于软件测试产学研研究。</div>
+          </div>
+        </div>
+        <div class="card animate delay3">
+          <div class="card-icon">👩‍💼</div>
+          <div class="card-text">
+            <div class="card-name">施梦瑶</div>
+            <div class="card-role">首席技术官</div>
+            <div class="card-desc">电子工程博士学位，现任测试部首席技术官。在测试以及无线通讯领域深耕多年。</div>
+          </div>
+        </div>
+        <div class="card animate" style="animation-delay:0.4s;">
+          <div class="card-icon">👨‍💼</div>
+          <div class="card-text">
+            <div class="card-name">苏亦南</div>
+            <div class="card-role">电子信息工程师</div>
+            <div class="card-desc">电子信息工程师，是价值200亿企业业务的战略领导者，拥有多所高校电子工程博士学位。</div>
+          </div>
+        </div>
+        <div style="background:#2d5016; color:#f5ecd7; padding:12px; text-align:center; margin-top:15px;">
+          <div style="font-size:10px; color:rgba(255,255,255,0.8); margin-bottom:4px;">★ 热点 ★</div>
+          <div style="font-size:14px; font-weight:bold;">零碳绿色氢，走向更清洁、更绿色的未来！</div>
+        </div>
+      </div>
+      <div style="text-align:center; padding:15px; font-size:12px; color:#6b4423;">— 03 / 04 —</div>
+    </div>
+  </div>
+
+  <!-- 第4页：会议安排 -->
+  <div class="page" id="page3">
+    <div class="paper-bg"></div>
+    <div class="paper-border"></div>
+    <div style="position:relative; z-index:10; height:100%; display:flex; flex-direction:column;">
+      <div class="top-bar">
+        <span class="url">www.tencent-hr.com</span>
+        <div style="text-align:right;"><div style="font-size:14px; font-weight:bold;">第 04 版</div></div>
+      </div>
+      <div class="animate" style="display:flex; align-items:center; gap:10px; padding:0 20px;">
+        <span class="tag">热点</span>
+        <div class="section-title">互联网人才会议安排</div>
+      </div>
+      <div class="content animate delay1">
+        <div style="font-size:12px; color:#6b4423; text-align:center; font-style:italic; margin-bottom:15px;">THE ARRANGEMENT OF INTERNET BIG SHOT MEETING</div>
+        <div class="illustration" style="height:100px;">
+          <div style="display:flex; justify-content:center; align-items:flex-end; height:100%; gap:3px;">
+            <div style="width:20px; height:40px; background:#3a5a8a; border:1px solid #1a2a3a;"></div>
+            <div style="width:25px; height:55px; background:#3a5a8a; border:1px solid #1a2a3a;"></div>
+            <div style="width:30px; height:70px; background:#3a5a8a; border:1px solid #1a2a3a;"></div>
+            <div style="width:22px; height:45px; background:#3a5a8a; border:1px solid #1a2a3a;"></div>
+            <div style="width:28px; height:60px; background:#3a5a8a; border:1px solid #1a2a3a;"></div>
+            <div style="width:20px; height:35px; background:#3a5a8a; border:1px solid #1a2a3a;"></div>
+            <div style="width:24px; height:50px; background:#3a5a8a; border:1px solid #1a2a3a;"></div>
+          </div>
+          <div style="height:15px; background:#6b4423; margin-top:5px;"></div>
+        </div>
+        <div class="schedule animate delay2">
+          <div class="schedule-time"><div class="date">7月22日</div><div class="time">10:00</div></div>
+          <div class="schedule-content">互联网人才会议开幕式，各知名互联网专家上台致辞。</div>
+        </div>
+        <div class="schedule animate" style="animation-delay:0.3s;">
+          <div class="schedule-time"><div class="date">7月22日</div><div class="time">14:00</div></div>
+          <div class="schedule-content">互联网人才会议开始，邀请嘉宾上台演讲与观众互动。</div>
+        </div>
+        <div class="schedule animate" style="animation-delay:0.4s;">
+          <div class="schedule-time"><div class="date">7月23日</div><div class="time">10:00</div></div>
+          <div class="schedule-content">邀请嘉宾演讲互动，举行互联网人才交流活动。</div>
+        </div>
+        <div class="schedule animate" style="animation-delay:0.5s;">
+          <div class="schedule-time"><div class="date">7月23日</div><div class="time">11:00</div></div>
+          <div class="schedule-content">邀请嘉宾演讲互动，主办方举行自由人脉茶饮交流。</div>
+        </div>
+        <div class="schedule animate" style="animation-delay:0.6s;">
+          <div class="schedule-time"><div class="date">7月23日</div><div class="time">14:00</div></div>
+          <div class="schedule-content">举行互联网人才会议闭幕，圆满结束本次盛会。</div>
+        </div>
+        <div style="text-align:center; padding:20px; border-top:3px double #2d5016; border-bottom:3px double #2d5016; margin-top:20px;">
+          <div style="font-size:18px; font-weight:bold; color:#1a3009; letter-spacing:4px; margin-bottom:5px;">期待您的莅临</div>
+          <div style="font-size:11px; color:#6b4423; font-style:italic;">Looking forward to your presence</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- 页面指示器 -->
+<div class="dots">
+  <div class="dot active" data-page="0"></div>
+  <div class="dot" data-page="1"></div>
+  <div class="dot" data-page="2"></div>
+  <div class="dot" data-page="3"></div>
+</div>
+
+<!-- 画中画缩略按钮 -->
+<div class="pip-trigger" id="pipTrigger">
+  <span class="pip-trigger-icon">📜</span>
+  <span class="pip-trigger-text">请柬</span>
+</div>
+
+<!-- 画中画小窗 -->
+<div class="pip" id="pip">
+  <div class="pip-header">
+    <span>📜 电子请柬</span>
+    <button class="pip-close" id="pipClose">×</button>
+  </div>
+  <div class="pip-content">
+    <div class="pip-title">邀请函</div>
+    <div class="pip-info">📅 7月22日<br>📍 腾讯 · 深圳</div>
+    <div class="pip-nav">
+      <button class="pip-btn" onclick="goToPage(0); closePip();">封面</button>
+      <button class="pip-btn" onclick="goToPage(1); closePip();">简介</button>
+      <button class="pip-btn" onclick="goToPage(2); closePip();">嘉宾</button>
+      <button class="pip-btn" onclick="goToPage(3); closePip();">安排</button>
+    </div>
+    <div class="pip-contact">
+      <div class="pip-title" style="font-size:14px;">📞 联系我们</div>
+      <div class="pip-info" style="font-size:10px;">主办：腾讯公司<br>电话：0755-8601-3388<br>邮箱：hr@tencent.com</div>
+    </div>
+  </div>
+</div>
+
+<script>
+var currentPage = 0;
+var totalPages = 4;
+var pages = document.querySelectorAll('.page');
+var dots = document.querySelectorAll('.dot');
+
+function goToPage(index) {
+  if(index < 0 || index >= totalPages || index == currentPage) return;
+  pages[currentPage].classList.remove('active');
+  pages[index].classList.add('active');
+  dots[currentPage].classList.remove('active');
+  dots[index].classList.add('active');
+  currentPage = index;
+}
+
+dots.forEach(function(dot,i){
+  dot.onclick = function(){ goToPage(i); };
+});
+
+pages.forEach(function(page,i){
+  page.onclick = function(e){
+    if(e.target.closest('.dots') || e.target.closest('.pip')) return;
+    if(i < totalPages-1) goToPage(i+1);
+  };
+});
+
+document.addEventListener('touchstart',function(e){ touchStart = e.touches[0].clientX; });
+document.addEventListener('touchend',function(e){
+  var delta = touchStart - e.changedTouches[0].clientX;
+  if(delta > 50) goToPage(currentPage+1);
+  if(delta < -50) goToPage(currentPage-1);
+});
+
+// 画中画交互 - 点击缩略按钮显示/隐藏
+var pip = document.getElementById('pip');
+var pipTrigger = document.getElementById('pipTrigger');
+var pipClose = document.getElementById('pipClose');
+
+function togglePip() {
+  pip.classList.toggle('show');
+}
+
+function closePip() {
+  pip.classList.remove('show');
+}
+
+pipTrigger.onclick = togglePip;
+pipClose.onclick = closePip;
+
+document.addEventListener('click', function(e){
+  if(!e.target.closest('.pip') && !e.target.closest('.pip-trigger')) {
+    pip.classList.remove('show');
+  }
+});
+</script>
+
+</body>
+</html>
